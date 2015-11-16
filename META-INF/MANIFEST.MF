@@ -9,7 +9,7 @@ Bundle-ClassPath: .,lib/commons-codec-1.6.jar,lib/commons-io-2.4.jar,l
  ib/jackson-jaxrs-base-2.6.3.jar,lib/jackson-jaxrs-json-provider-2.6.3
  .jar,lib/jackson-module-jaxb-annotations-2.6.3.jar,lib/json-20140107.
  jar,lib/junit-4.11.jar,lib/unirest-java-1.4.7.jar
-Bundle-Version: 1.0.1
+Bundle-Version: 1.0.7
 Bundle-Name: Dynatrace Synthetic
 Bundle-ManifestVersion: 2
 Bundle-SymbolicName: com.dynatrace.synthetic;singleton:=true

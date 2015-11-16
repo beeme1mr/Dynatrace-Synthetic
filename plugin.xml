@@ -21,6 +21,32 @@
           <item value="PRIVATEPEER" />
         </list>
       </property>
+      <property key="enableProxy" label="Enable Proxy" type="boolean" description="Enables proxy support." default="false" />
+      <property key="proxyServer" label="Proxy Server" type="string" description="Enter the name or IP address of the proxy server" default="" multiline="false">
+        <visibility>
+          <rule key="enableProxy" value="true" />
+        </visibility>
+      </property>
+      <property key="proxyPort" label="Proxy Port" type="long" description="Enter the port used by the proxy server" default="3128">
+        <visibility>
+          <rule key="enableProxy" value="true" />
+        </visibility>
+      </property>
+      <property key="enableSecureProxy" label="Enable Secured Proxy" type="boolean" description="Enable if the proxy server requires a username and password." default="false">
+        <visibility>
+          <rule key="enableProxy" value="true" />
+        </visibility>
+      </property>
+      <property key="proxyUserName" label="Proxy User Name" type="string" description="The user name for the proxy" default="" multiline="false">
+        <visibility>
+          <rule key="enableSecureProxy" value="true" />
+        </visibility>
+      </property>
+      <property key="proxyPassword" label="proxyPassword" type="password" description="The password for the proxy server." default="">
+        <visibility>
+          <rule key="enableSecureProxy" value="true" />
+        </visibility>
+      </property>
     </configuration>
   </extension>
   <extension point="com.dynatrace.diagnostics.pdk.monitor" id="com.dynatrace.synthetic.monitor" name="Synthetic">

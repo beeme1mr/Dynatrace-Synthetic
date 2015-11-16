@@ -39,6 +39,11 @@ public class monitor implements Monitor {
 	private String password;
 	private String scriptName;
 	private String scriptType;
+	private String proxyServer;
+	private int proxyPort;
+	private String proxyUserName;
+	private String proxyPassword;
+	
 	
 	private Collection<MonitorMeasure> monitorMeasures;
 	private MonitorMeasure dynamicMeasure;
@@ -49,10 +54,27 @@ public class monitor implements Monitor {
 		password = env.getConfigPassword("password");
 		scriptName = env.getConfigString("testName");
 		scriptType = env.getConfigString("testType");
+		proxyServer = env.getConfigString("proxyServer");
+		proxyPort = (int)(long)env.getConfigLong("proxyPort");
+		proxyUserName = env.getConfigString("proxyUserName");
+		proxyPassword = env.getConfigPassword("proxyPassword");
 		
 		if(isNotNull(userName))   return new Status(Status.StatusCode.ErrorInternalConfigurationProblem, "A valid Dynatrace Synthetic user is required");
 		if(isNotNull(password))   return new Status(Status.StatusCode.ErrorInternalConfigurationProblem, "A valid Dynatrace Synthetic password is required");
 		if(isNotNull(scriptName)) return new Status(Status.StatusCode.ErrorInternalConfigurationProblem, "A valid Dynatrace Synthetic script is required");
+		
+		if (env.getConfigBoolean("enableSecureProxy") && env.getConfigBoolean("enableProxy")){
+			log.fine("Secure proxy support has been enabled");
+			if(isNotNull(proxyServer)) return new Status(Status.StatusCode.ErrorInternalConfigurationProblem, "A valid proxy server is required");
+			if(isNotNull(proxyUserName)) return new Status(Status.StatusCode.ErrorInternalConfigurationProblem, "A valid proxy user name is required");
+			if(isNotNull(proxyPassword)) return new Status(Status.StatusCode.ErrorInternalConfigurationProblem, "A valid proxy password is required");
+			RestManager.enableSecureProxy(proxyServer, proxyPort, proxyUserName, proxyPassword);
+		} else if (env.getConfigBoolean("enableProxy")){
+			log.fine("Proxy support has been enabled");
+			if(isNotNull(proxyServer)) return new Status(Status.StatusCode.ErrorInternalConfigurationProblem, "A valid proxy server is required");
+			RestManager.enableProxy(proxyServer, proxyPort);
+			
+		}
 		
 		return new Status(Status.StatusCode.Success);
 	}
@@ -66,8 +88,10 @@ public class monitor implements Monitor {
 		log.fine("Starting the execute method");
 
 		Authenticate token = new Authenticate(userName, password);
+		if(isNotNull(token.getAccessToken())) return new Status(Status.StatusCode.ErrorInternalUnauthorized, "The authentication token returned null");
 		log.fine("Successfully autheticated!  Using token: " + token.getAccessToken());
 		String monitorId = new Tests(token.getAccessToken()).getMonitorId(scriptName, scriptType);
+		if(isNotNull(monitorId)) return new Status(Status.StatusCode.ErrorInternalConfigurationProblem, "Unable to find a script matching '" + scriptName + "'");
 		log.fine("Found a matching script with an ID of " + monitorId);
 	    ProcessTestData testData = new ProcessTestData(scriptName, token.getAccessToken(), monitorId);
 	    HashMap<String, TestResultSummary> testResults = testData.getTestData();
@@ -129,6 +153,7 @@ public class monitor implements Monitor {
 
 	 @Override
 	public void teardown(MonitorEnvironment env) throws Exception {
+		 log.fine("Shutting down Unirest");
 		 RestManager.shutdownRest();
 	}
 }
